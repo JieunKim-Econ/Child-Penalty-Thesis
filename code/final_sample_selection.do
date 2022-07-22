@@ -13,56 +13,47 @@ gen newborn = .
 * New family member from childbirth
 // Condition 1. Addition year >= birth year (Addition due to birth before/at the survey year)
 // Condition 2. Reason for addition = birth
-replace newborn = 1 if h0441 - h0301 >= 0 & h0481 == 1
-replace newborn = 1 if h0442 - h0302 >= 0 & h0482 == 1
-replace newborn = 1 if h0443 - h0303 >= 0 & h0483 == 1
-replace newborn = 1 if h0444 - h0304 >= 0 & h0484 == 1
-replace newborn = 1 if h0445 - h0305 >= 0 & h0485 == 1
-replace newborn = 1 if h0446 - h0306 >= 0 & h0486 == 1
-replace newborn = 1 if h0447 - h0307 >= 0 & h0487 == 1
-replace newborn = 1 if h0448 -  h0308 >= 0 & h0488 == 1
-replace newborn = 1 if h0449 -  h0309 >= 0 & h0489 == 1
-replace newborn = 1 if h0450 -  h0310 >= 0 & h0490 == 1
-replace newborn = 1 if h0451 -  h0311 >= 0 & h0491 == 1
-replace newborn = 1 if h0452 -  h0312 >= 0 & h0492 == 1
-replace newborn = 1 if h0453 -  h0313 >= 0 & h0493 == 1
-replace newborn = 1 if h0454 -  h0314 >= 0 & h0494 == 1
-replace newborn = 1 if h0455 -  h0315 >= 0 & h0495 == 1
+foreach i of numlist 1/9 {
+	replace newborn = 1 if h044`i' - h030`i' >= 0 & h048`i' == 1
+	}
+
+foreach j of numlist 0/5 {
+	replace newborn = 1 if h045`j' - h031`j' >= 0 & h049`j' == 1
+	}
 
 * Leave individuals only with new childbirth
 keep if newborn == 1 
 
 * Ensure that the newborn is the first child in household 
 // Total number of kids = Number of kids under 6 yrs old
-keep if h_kid == 1 & h_kidage06 == 1 
+keep if h_kid <= 1 & h_kidage06 <= 1 
 
 xtset pid year, yearly
 
 * Generate the year of the first child birth
 bysort pid: egen birthyr_1c = min(year)
 
-save "${hp}output/parents_pid.dta", replace
-
 * The first child birth year by individual 
 collapse birthyr_1c, by(pid)
 
-save "${hp}output/pid_final.dta", replace
+* Specify the label of birthyr_1c as the year of the first childbirth
+label variable birthyr_1c "the year of the first childbirth" 
 
-sort pid
+save "${hp}output/pid_birthyr_1c.dta", replace
+
 *** Step 1: Merge with original data ***
+sort pid
 merge 1:m pid using "${hp}HP/save_0407.dta"
 keep if _merge == 3
 drop _merge
 
 xtset pid year, yearly
 
-* Leave individuals only with the first childbirth year btw 1999 and 2016
-keep if birthyr_1c != .
+* Correct the discrepency of years of the first childbirth
+replace birthyr_1c = p9072 if p9072 != . & p9072 != birthyr_1c // 354 changed
+/* Double check 
+bysort pid: gen birthyr_gap = (p9072 == birthyr_1c) if p9072 != . */
 keep if inrange(birthyr_1c, 1999, 2016)
-
-* Make sure that the newborn is the first child in household 
-// the later condition is for calculating the length of years before the first child birth
-keep if (h_kid == 1 & h_kidage06 == 1) | (h_kid == 0 & h_kidage06 == 0)
 
 ** Step 2: Keep individuals only if observable for 6 years (1 year before birth and 4 yrs after birth)
 
@@ -76,15 +67,16 @@ bysort pid: egen afterbirth = max(diff)
 bysort pid: egen beforebirth = min(diff)
 
 * Leave individuals trackable over 6 years 
-keep if afterbirth >= 4 & beforebirth <= -1  
-
-* Drop the sample with the discrepency regarding the year of first childbirth
-bysort pid: egen wsample = max(p9072)
-drop if wsample != . 
+keep if afterbirth >= 4 & beforebirth <= -1
+	
+* Keep individuals with at least six observations 
+bysort pid : gen nobs = _N 
+keep if nobs >= 6 // 50 deleted
+* drop nobs
 
 * Check the final number of unique pid
 egen num_pid = group(pid) 
-sum num_pid // 839 individual 
+sum num_pid // 2363 obs
 
 save "${hp}output/final_sample.dta", replace
 
@@ -109,7 +101,7 @@ drop _merge
 
 * Check the final number of unique pid
 egen num_pid = group(pid) 
-sum num_pid // 738 individuals 
+sum num_pid // 2054 individuals 
 save "${hp}output/sample_covid.dta", replace
 
 *------------------------------------------------------------------------------
@@ -126,5 +118,5 @@ sort pid wave
 
 * Check the final number of unique pid
 egen num_pid = group(pid) 
-sum num_pid // 839 individuals
+sum num_pid // 2363 individuals
 save "${hp}output/sample_emphistory.dta", replace
