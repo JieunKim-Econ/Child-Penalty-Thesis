@@ -6,7 +6,7 @@ global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
 use "${hp}HP/save_0407.dta", clear
  
 *------------------------------------------------------------------------------
-* KLIPS sample selection with household data	        -- Update: 21.July.2022
+* KLIPS sample selection with household data	        -- Update: 22.July.2022
 *------------------------------------------------------------------------------
 gen newborn = .
 
@@ -91,7 +91,7 @@ keep pid p_sex p_married birthyr_1c wave year
 save "${hp}output/sample_to_merge.dta", replace
 
 *------------------------------------------------------------------------------
-* Merge the baseline dataset and the Covid survey   	 -- Update: 4.July.2022
+* Merge the baseline dataset and the Covid survey   	 
 *------------------------------------------------------------------------------
 use "${hp}output/sample_id.dta", clear
 
@@ -105,7 +105,7 @@ sum num_pid // 2054 individuals
 save "${hp}output/sample_covid.dta", replace
 
 *------------------------------------------------------------------------------
-* Merge the baseline dataset and individual's work history  -- Update: 4.July.2022
+* Merge the baseline dataset and individual's work history  
 *------------------------------------------------------------------------------
 use "${hp}HH_PSN/klips23w_i.dta", clear
 rename jobwave wave
