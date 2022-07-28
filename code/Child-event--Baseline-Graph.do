@@ -96,12 +96,11 @@ foreach gender in women men  {
 	} // var
 } // gender
 
-
-
 ********************************************************************************
 * Figure: LOADING AND RESHAPING DATA
 ********************************************************************************
 foreach var in earnings extensive intensive wagerate {
+
 	display "    " 
 	display "`var'"
 	display "   " 
@@ -115,31 +114,57 @@ foreach var in earnings extensive intensive wagerate {
 		gen boundH = (var_p - var_cH)/var_c // JE: High 
 
 	keep b var_c gap boundL boundH variable eventtime gender
-	// JE: b created in the regression 
 
 	reshape wide b var_c gap boundL boundH, i(variable eventtime) j(gender, string)
 
 	if "`var'"=="earnings"{
 		global label Earnings
 		global ylabel Earnings
-		global axis1 xlabel(-5(1)10, nogrid) ylabel(-0.60(0.10)0.20) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
+		global axis1 xlabel(-5(1)10, nogrid) ylabel(-1.00(0.20)0.80) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
 	}
 	if "`var'"=="extensive"{
 		global label Participation Rate
 		global ylabel Participation Rate
-		global axis1 xlabel(-5(1)10, nogrid) ylabel(-0.60(0.10)0.20) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
+		global axis1 xlabel(-5(1)10, nogrid) ylabel(-1.00(0.20)0.80) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
 	}
 	if "`var'"=="intensive"{
 		global label Hours Worked
 		global ylabel Hours Worked
-		global axis1 xlabel(-5(1)10, nogrid) ylabel(-0.60(0.10)0.20) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
+		global axis1 xlabel(-5(1)10, nogrid) ylabel(-1.00(0.20)0.80) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
 	}
 	if "`var'"=="wagerate"{
 		global label Wage Rate
 		global ylabel Wage Rate
-		global axis1 xlabel(-5(1)10, nogrid) ylabel(-0.60(0.10)0.20) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
+		global axis1 xlabel(-5(1)10, nogrid) ylabel(-1.00(0.20)0.80) xline(-.5) ttext(0.20 1.15 "First Child Birth") ttext(-0.47 7 "Long-Run Child Penalty
 	}
-}
 
+********************************************************************************
+* Calculating Penalty
+********************************************************************************
 
-gen penal  = (bmen  - bwomen)/var_cwomen
+	gen penal  = (bmen  - bwomen)/var_cwomen
+	
+	quietly sum penal if eventtime == 10
+	local m1 = r(mean)
+	gen penalty = `m1'
+	
+	if "`var'"=="earnings" | "`var'"=="extensive"  | "`var'"=="intensive"  | "`var'"=="wagerate" { 
+	format penalty %9.3fc
+	}
+	
+	tostring penalty, replace force usedisplayformat
+	global penalty = penalty
+
+	twoway (rarea boundLmen   boundHmen   eventtime, color(gs14) lcolor(gs12) lwidth(vvthin))        ///
+		   (rarea boundLwomen boundHwomen eventtime, color(gs14) lcolor(gs12) lwidth(vvthin))        ///
+		   (connected gapmen   eventtime, lcolor(gs8) mcolor(gs8))      			    			 ///
+		   (connected gapwomen eventtime, lcolor(black) mcolor(black)), 			    			 ///
+	graphregion(color(white)) xtitle("Event Time (Years)") ytitle("$ylabel Relative to Event Time -1")   ///
+	legend(order(3 "Male $label" 4 "Female $label") col(1) ring(0) position(5)) ///
+	$axis1 = $penalty", justification(left))
+
+	graph export "${hp}Graphs/Childevent_`var'.pdf", as(pdf) replace
+	graph export "${hp}Graphs/Childevent_`var'.eps", as(eps) preview(off) replace	
+	
+	} // var
+
