@@ -6,7 +6,7 @@ global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
 use "${hp}output/final_sample.dta", clear
  
 *------------------------------------------------------------------------------
-* Subsample: 10 income groups 						    -- Update: 22.July.2022
+* Subsample: 10 income groups 						    -- Update: 25.July.2022
 * Idea: B10 Child penalty vs. T10 Child penalty -> Inequality in inequality 
 *------------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ global pctls = "10 50 90"
 forvalues myear = 1998(1)2020 {
 
 		* compute percentiles
-		qui _pctile h_incomeq if year == `myear', p($pctls)
+		qui _pctile h_inc_total if year == `myear', p($pctls)
 
 		local P10 = `r(r1)'
 		local P50 = `r(r2)'
@@ -24,10 +24,10 @@ forvalues myear = 1998(1)2020 {
 		
 		qui gen incgroup_`myear' = .
 		
-		replace incgroup_`myear' = 1 if h_incomeq <= `P10' & year == `myear' 
-		replace incgroup_`myear' = 2 if h_incomeq > `P10' & h_incomeq <= `P50' & year == `myear'   
-		replace incgroup_`myear' = 3 if h_incomeq > `P50' & h_incomeq <= `P90' & year == `myear' 
-		replace incgroup_`myear' = 4 if h_incomeq > `P90' & year == `myear'  
+		replace incgroup_`myear' = 1 if h_inc_total <= `P10' & year == `myear' 
+		replace incgroup_`myear' = 2 if h_inc_total > `P10' & h_inc_total <= `P50' & year == `myear'   
+		replace incgroup_`myear' = 3 if h_inc_total > `P50' & h_inc_total <= `P90' & year == `myear' 
+		replace incgroup_`myear' = 4 if h_inc_total > `P90' & year == `myear'  
 	} 
 
 
@@ -52,16 +52,16 @@ gen under_highschool =  (p_edu < 3)
 * Employed
 gen emp = (p_econstat == 1)
 
-* Leave samples 1 year after their first childbirth 
+* Leave samples before the first childbirth 
 keep if diff == 1
 
 * Check the number of remaining observations 
-sum num_pid
+sum num_pid // obs 2,270
 
 * by p_sex, sort: sum p_age birthyr_1c lfp emp earning wage_rate p_hours unigrad
 
 * Average by five income groups
-collapse lfp emp earning wage_rate p_hours unigrad, by (p_sex incgroup_2010)
+collapse lfp emp earning wage_rate p_hours unigrad, by (p_sex incgroup_2005)
 	
 	
 	
