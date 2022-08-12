@@ -7,22 +7,33 @@ global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
 * Inequality in inequality estimation					 -- Update: 12.Aug.2022
 * Within the same income group: 1) B20: Women vs. Men 2) T20: Women vs. Men
 * Within the same gender: 1) Women: B20 vs. T20 2) Men: B20 VS. T20
+* Q1: Do the poor have higher child penalties than the rich? 
+* Q2: Do the poor's penalties last longer than the rich? 
 *------------------------------------------------------------------------------
 
 * Resetting
 gen gender = "`gender'"
-save "${hp}output/Eventstudy_extension1.dta", replace
+
+foreach myear of numlist 2005(5)2020 { 
+	foreach c in 1 5 { // income group
+	
+		save "${hp}output/Eventstudy_inequality`myear'_incgrp`c'.dta", replace 
+	}
+}
 
 * Getting the data by gender and income group
-foreach gender in women men  {
-	use "${hp}output/2020`gender'_incgroup5.dta", clear
+foreach c in 1 5 { // income group
+	foreach gender in women men  {
+		foreach myear of numlist 2005(5)2020 {  
+		
+	use "${hp}output/`myear'`gender'_incgroup`c'.dta", clear
 
-* Creating Event Time Dummies
+	* Creating Event Time Dummies
 	sort pid eventtime 
 	char eventtime[omit] -1
 	xi i.eventtime
 	
-	save "${hp}output/Inequality_eventstudy.dta", replace
+	save "${hp}output/`myear'Inequality_eventstudy`c'.dta", replace
 
 ********************************************************************************
 * RUNNING LOOPS
@@ -32,7 +43,7 @@ foreach gender in women men  {
 		display "`gender' `var'"
 		display "   " 
 		
-		use "${hp}output/Inequality_eventstudy.dta", clear
+		use "${hp}output/`myear'Inequality_eventstudy`c'.dta", clear
 		
 		if "`var'"=="earnings" {
 			gen var = earning
@@ -90,23 +101,29 @@ foreach gender in women men  {
 		gen variable = "`var'"
 		gen gender   = "`gender'"
 
-		append using "${hp}output/Eventstudy_extension1.dta"
+		append using "${hp}output/Eventstudy_inequality`myear'_incgrp`c'.dta"
 
-		save "${hp}output/Eventstudy_extension1.dta", replace
+		save "${hp}output/Eventstudy_inequality`myear'_incgrp`c'.dta", replace
 
-	} // var
-} // gender
+			} // var
+		} // gender
+	} // year
+} // c: income group
 
 ********************************************************************************
 * Figure: LOADING AND RESHAPING DATA
 ********************************************************************************
-foreach var in earnings extensive intensive wagerate {
+set more off 
+
+foreach myear of numlist 2005(5)2020 { 
+	foreach c in 1 5 { // income group
+		foreach var in earnings extensive intensive wagerate {
 
 	display "    " 
 	display "`var'"
 	display "   " 
 
-	use "${hp}output/Eventstudy_extension1.dta", clear
+	use "${hp}output/Eventstudy_inequality`myear'_incgrp`c'.dta", clear
 
 	keep if variable == "`var'"
 
@@ -164,8 +181,9 @@ foreach var in earnings extensive intensive wagerate {
 	legend(order(3 "Male $label" 4 "Female $label") col(1) ring(0) position(5)) ///
 	$axis1 = $penalty", justification(left))
 
-	graph export "${hp}Graphs/Income_inequality_childevent_`var'.pdf", as(pdf) replace
-	graph export "${hp}Graphs/Income_inequality_childevent_`var'.eps", as(eps) preview(off) replace	
+	graph export "${hp}Graphs/`myear'incgroup`c'_childevent_`var'.pdf", as(pdf) replace
+	graph export "${hp}Graphs/`myear'incgroup`c'__childevent_`var'.eps", as(eps) preview(off) replace	
 	
-	} // var
-
+			} // var
+		} // myear
+	} // c: income group 
