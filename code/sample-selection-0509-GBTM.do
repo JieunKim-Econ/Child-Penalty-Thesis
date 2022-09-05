@@ -3,10 +3,10 @@ set more off
 set trace off
 global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
 
-use "${hp}HP/save_0407.dta", clear
+use "${hp}HP/save_0509.dta", clear
  
 *------------------------------------------------------------------------------
-* KLIPS sample selection with household data	        -- Update: 28.July.2022
+* KLIPS sample selection with household data	        -- Update: 5.Sep.2022
 *------------------------------------------------------------------------------
 gen newborn = .
 
@@ -39,13 +39,13 @@ collapse birthyear_1c, by(pid)
 * Label birthyear_1c as the year of the first childbirth
 label variable birthyear_1c "the year of the first childbirth" 
 
-save "${hp}output/pid_birthyear_1c.dta", replace
+save "${hp}output/pid_birthyear_1c_0509.dta", replace
 
 ********************************************************************************
 * Step 1: Merge with original data 
 ********************************************************************************
 sort pid
-merge 1:m pid using "${hp}HP/save_0407.dta"
+merge 1:m pid using "${hp}HP/save_0509.dta"
 keep if _merge == 3
 drop _merge
 
@@ -78,9 +78,9 @@ bysort pid: egen beforebirth = min(eventtime)
 * Leave individuals observable at least 1 year after the first childbirth 
 keep if beforebirth <= -1 & afterbirth >= 1 
 
-* Age restriction: Age 20-50 when having the first child
+* Age restriction: Age 19-50 when having the first child
 gen age2050_1c = .
-replace age2050_1c = 1 if eventtime == 0 & inrange(p_age, 20, 50)
+replace age2050_1c = 1 if eventtime == 0 & inrange(p_age, 19, 50)
 bysort pid: egen birthage_1c = max(age2050_1c) 
 drop if birthage_1c != 1 // 1,522 deleted
 drop age2050_1c 
@@ -88,28 +88,29 @@ drop age2050_1c
 * Keep individuals with at least 7 observations 
 bysort pid : gen nobs = _N 
 keep if nobs >= 7 //  1,395 deleted
-* drop nobs
+drop nobs
 
 * Check the final number of unique pid
 egen num_pid = group(pid) 
-sum num_pid // 2,367 obs
+sum num_pid // 2,370 obs
+drop num_pid
 
-save "${hp}output/final_sample.dta", replace
+save "${hp}output/final_sample_0509.dta", replace
 
 * Collect pid as the key variable for merging with Covid dataset 
-use "${hp}output/final_sample.dta", clear
+use "${hp}output/final_sample_0509.dta", clear
 collapse p_sex, by (pid)
-save "${hp}output/sample_id.dta", replace
+save "${hp}output/sample_id_0509.dta", replace
 
 * Keep the ncessary variables for merging with work history dataset
-use "${hp}output/final_sample.dta", clear
+use "${hp}output/final_sample_0509.dta", clear
 keep pid p_sex p_married birthyear_1c wave year 
-save "${hp}output/sample_to_merge.dta", replace
+save "${hp}output/sample_to_merge_0509.dta", replace
 
 *------------------------------------------------------------------------------
 * Merge the baseline dataset and the Covid survey   	 
 *------------------------------------------------------------------------------
-use "${hp}output/sample_id.dta", clear
+use "${hp}output/sample_id_0509.dta", clear
 
 merge 1:m pid using "${hp}ADTsurvey/klips23a.dta"
 keep if _merge == 3
@@ -118,8 +119,11 @@ drop _merge
 * Check the final number of unique pid
 egen num_pid = group(pid) 
 sum num_pid // 2,046 individuals 
-save "${hp}output/sample_covid.dta", replace
+save "${hp}output/sample_covid_0509.dta", replace
 
+use "${hp}output/sample_covid_0509.dta", clear 
+
+/*
 *------------------------------------------------------------------------------
 * Merge the baseline dataset and individual's work history  
 *------------------------------------------------------------------------------
@@ -136,3 +140,9 @@ sort pid wave
 egen num_pid = group(pid) 
 sum num_pid // 2,052 individuals
 save "${hp}output/sample_emphistory.dta", replace
+*/
+
+
+
+
+
