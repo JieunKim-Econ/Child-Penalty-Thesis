@@ -5,6 +5,12 @@ global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
 
 use "${hp}output/women_sample_0509.dta", clear
 
+* Plot style
+grstyle init 
+grstyle set plain
+grstyle set symbol
+grstyle set lpattern
+grstyle set color plottig
 *------------------------------------------------------------------------------
 * GBTM analysis: Career trajectories of women and men 	 -- Update: 7.Sep.2022
 *------------------------------------------------------------------------------
@@ -39,10 +45,9 @@ keep if empbfchild == 1
 * Rank the job status 
 gen jobstat = .
 replace jobstat = 1 if p_econstat != 1  // 1: unemployed or out of labor participation
-replace jobstat = 2 if p_job_status == 5 // 2: non-wage family worker
-replace jobstat = 3 if p_job_status == 4 // 3: self-employed
-replace jobstat = 4 if p_job_status == 3 | p_job_status == 2 // 4: temporary worker
-replace jobstat = 5 if p_job_status == 1 // 5: regular worker 
+replace jobstat = 2 if p_job_status == 5 | p_job_status == 4 // 2: non-wage worker
+replace jobstat = 3 if p_job_status == 3 | p_job_status == 2 // 4: temporary worker
+replace jobstat = 4 if p_job_status == 1 // 5: regular worker 
 
 * Check duplicated data
 duplicates tag pid eventtime, gen(flagss)
@@ -54,35 +59,26 @@ use "${hp}output/GBTM.dta", clear
 keep jobstat p_jobfam* pid eventtime
 keep if inrange(eventtime, -2, 10)
 
-gen time=.
-forval i = 1/10 { 
-	replace time = `i' if eventtime== -3 + `i'
-}
+gen time = eventtime + 3
 drop eventtime
-drop if time == .
 
+* Long to wide for GBTM analysis
 reshape wide jobstat p_jobfam*, i(pid) j(time)
-save "${hp}output/GBTM_wide.dta", replace
-use "${hp}output/GBTM_wide.dta", replace
+save "${hp}output/GBTM_wide2.dta", replace
 
-* Plot style
-grstyle init 
-grstyle set plain
-grstyle set symbol
-grstyle set lpattern
-grstyle set color plottig
+use "${hp}output/GBTM_wide2.dta", replace
 
 * Generate a set of time variables to pass to traj
-forval i = 1/10 { 
+forval i = 1/13 { 
   generate t_`i' = `i'
 }
 
-traj, var(jobstat*) indep(t_*) model(cnorm) order(3 3 3 3) min(1) max(5)
-trajplot, xlabel(1(1)10) xtitle("Time") ytitle("Work status") 
+traj, var(jobstat*) indep(t_*) model(cnorm) order(2 2 2 2) min(1) max(4) 
+trajplot, xlabel(1(1)13) xtitle("Time") ytitle("Work status") 
 * JE to-do: Add a vertical line at t=3, indicating the birth year
 
 * Function to print out summary stats
-program summary_table_procTraj_n
+program summary_table_procTraj
     preserve
     * Drop missing assigned observations
     drop if missing(_traj_Group)
@@ -128,5 +124,5 @@ program summary_table_procTraj_n
 end
 
 * Print out summary stats
-summary_table_procTraj_n
+summary_table_procTraj
 
