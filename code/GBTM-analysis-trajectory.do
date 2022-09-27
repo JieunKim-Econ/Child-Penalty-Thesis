@@ -1,7 +1,7 @@
 clear
 set more off
 set trace off
-global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
+global hp = "C:/Users/"
 
 use "${hp}output/women_sample_0509.dta", clear
 
@@ -12,7 +12,7 @@ grstyle set symbol
 grstyle set lpattern
 grstyle set color plottig
 *------------------------------------------------------------------------------
-* GBTM analysis: Career trajectories of women and men 	 -- Update: 8.Sep.2022
+* GBTM analysis: Career trajectories of women and men 	
 *------------------------------------------------------------------------------
 
 * Check the number of observations 
@@ -148,5 +148,3 @@ end
 
 * Print out summary stats
 summary_table_procTraj
-
-rename _traj_Group traj_group
