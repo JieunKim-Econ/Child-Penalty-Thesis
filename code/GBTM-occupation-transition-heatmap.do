@@ -1,7 +1,7 @@
 clear
 set more off
 set trace off
-global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
+global hp = "C:/Users/"
 
 use "${hp}output/GBTM_trajplot.dta", clear
 
@@ -13,12 +13,12 @@ grstyle set lpattern
 grstyle set color plottig
 
 *-------------------------------------------------------------------------------
-* Occupation transition before/after childbirth   		-- Update: 12.Sep.2022
-* Return to labor market vs. Stay in labor market 
+* Occupation transition before/after childbirth   		
+* Re-entry after exit mothers vs. Stable participation mothers
 *-------------------------------------------------------------------------------
 rename _traj_Group traj_group
 
-* Group 1: Return to labor market 
+* Group 1: Re-entry after exit
 keep if traj_group == 2 // 106 women
 
 * Occupation rank BEFORE childbirth
@@ -283,7 +283,7 @@ heatplot jobtrans_postchild_all,  values(format(%4.2f)) legend(off) color(Reds ,
 */ xlabel(,labsize(small) angle(45)) ylabel(,labsize(small))
 
 *-------------------------------------------------------------------------------
-* Group 2: Presistent regular employee  
+* Group 2: Stable participation mothers 
 *-------------------------------------------------------------------------------
 use "${hp}output/GBTM_trajplot.dta", clear
 rename _traj_Group traj_group
