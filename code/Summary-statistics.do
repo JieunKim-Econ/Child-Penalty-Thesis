@@ -1,12 +1,12 @@
 clear
 set more off
 set trace off
-global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
+global hp = "C:/Users/"
 
 use "${hp}output/final_sample_0509.dta", clear
  
 *------------------------------------------------------------------------------
-* Summary statistics at one year before first childbirth -- Update: 19.Sep.2022
+* Summary statistics at one year before first childbirth 
 *------------------------------------------------------------------------------
 * Sample: Individuals trackable for 15 years (with 23rd wave KLIPS from 1998 to 2020)
 *-------------------------------------------------------------------------------
@@ -63,7 +63,4 @@ drop num_pid
 
 by p_sex, sort: sum p_age birthyear_1c lfp emp earning wage_rate p_hours unigrad college highschool
 // male: 1,032, female: 960
-
-* Average by five income groups
-collapse h_inc_total lfp emp earning wage_rate p_hours unigrad, by (p_sex)
 
