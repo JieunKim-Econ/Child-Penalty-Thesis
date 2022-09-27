@@ -1,12 +1,12 @@
 clear
 set more off
 set trace off
-global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
+global hp = "C:/Users"
 
 use "${hp}output/women_sample_0509.dta", clear
  
 *------------------------------------------------------------------------------
-* Beyond access, Actual usage of maternal leave 	     -- Update: 19.Sep.2022
+* Beyond access, Actual usage of maternal leave 	     
 *------------------------------------------------------------------------------
 rename p4109 ml_work // 1: work provides maternal leave 2: no provision 
 rename p4110 ml_employee // 1: survey respondent can use maternal leave 2: can't use 
