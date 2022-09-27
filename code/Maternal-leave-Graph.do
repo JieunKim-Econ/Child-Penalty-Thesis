@@ -1,10 +1,10 @@
 clear
 set more off
 set trace off
-global hp = "C:/Users/jieun/Desktop/Thesis/Data_KLIPS/"
+global hp = "C:/Users/"
 
 *------------------------------------------------------------------------------
-* [Yes/No version] Maternal leave estimation		      -- Update: 19.SEP.2022
+* [Yes/No version] Maternal leave estimation		     
 *------------------------------------------------------------------------------
 
 * Resetting
